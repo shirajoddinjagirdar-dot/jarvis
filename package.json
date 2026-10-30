@@ -1,0 +1,9 @@
+{
+  "name": "jarvis-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JARVIS holographic Android wrapper",
+  "scripts": {
+    "build": "echo Static HTML app ready"
+  }
+}

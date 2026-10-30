@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>J.A.R.V.I.S. Holographic Interface</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--c:#35e6ff;--b:#2a7bff;--g:rgba(6,26,46,.5);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden;background:#000;color:#bff6ff;font-family:Orbitron,'Segoe UI',system-ui,sans-serif;-webkit-user-select:none;user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%}
+.scan{position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(53,230,255,.035) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.85) 100%)}
+header{position:fixed;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:calc(8px + env(safe-area-inset-top,0px)) 14px 8px;font-size:clamp(9px,1.6vw,12px);letter-spacing:2px;border-bottom:1px solid rgba(53,230,255,.25);background:linear-gradient(180deg,rgba(6,26,46,.7),transparent)}
+header i{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);margin-right:8px;animation:pl 1.6s infinite}
+@keyframes pl{50%{opacity:.25}}
+#clk{font-weight:800;font-size:clamp(13px,2.4vw,20px);text-shadow:0 0 12px var(--c);color:#fff}
+.glass{background:var(--g);border:1px solid rgba(53,230,255,.35);box-shadow:0 0 24px rgba(42,123,255,.25),inset 0 0 24px rgba(53,230,255,.08);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:6px;padding:10px 12px;font-size:clamp(9px,1.3vw,11px);letter-spacing:1px}
+.side{position:fixed;top:64px;width:min(24vw,240px);display:flex;flex-direction:column;gap:6px;max-height:calc(100% - 300px);overflow:hidden}
+#L{left:10px;transform:perspective(800px) rotateY(14deg);transform-origin:left}
+#R{right:10px;transform:perspective(800px) rotateY(-14deg);transform-origin:right}
+h3{margin:0 0 2px;font-size:1.15em;color:var(--c);letter-spacing:3px;border-bottom:1px solid rgba(53,230,255,.3);padding-bottom:4px}
+.r{display:flex;justify-content:space-between;gap:6px}.r b{color:#fff;font-weight:600;text-align:right}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;text-align:center;font-size:.9em}.cal .t{background:var(--c);color:#000;border-radius:3px;font-weight:800}.cal .h{opacity:.5}
+.rl div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.9}
+.hb{background:transparent;border:1px solid var(--c);color:var(--c);font:inherit;padding:5px;border-radius:4px;cursor:pointer;letter-spacing:2px}.hb:active{background:rgba(53,230,255,.25)}
+#bot{position:fixed;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0 10px calc(10px + env(safe-area-inset-bottom,0px))}
+#st{font-size:clamp(15px,3.4vw,26px);font-weight:800;letter-spacing:8px;color:#fff;text-shadow:0 0 18px var(--c),0 0 40px var(--b);padding-left:8px}
+#sub{font-size:clamp(8px,1.3vw,10px);letter-spacing:3px;opacity:.65;text-align:center}
+#vo{width:min(760px,96%);height:96px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;overflow:hidden;font-size:clamp(11px,2vw,15px);letter-spacing:1px;text-shadow:0 0 10px var(--c)}
+.ln{animation:fi .5s}.ln b{color:var(--c)}.ln.j span{color:#fff}.ln:nth-last-child(n+3){opacity:.45}
+@keyframes fi{from{opacity:0;transform:translateY(14px) perspective(400px) rotateX(40deg);filter:blur(4px)}}
+.ln a{color:#ffd54a;pointer-events:auto;margin-left:8px}
+#ctl{display:flex;align-items:center;gap:clamp(8px,2vw,18px);padding:8px 16px;border-radius:40px;flex-wrap:wrap;justify-content:center}
+#mic{width:58px;height:58px;border-radius:50%;border:2px solid var(--c);background:radial-gradient(circle,rgba(53,230,255,.35),rgba(6,26,46,.8));cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px var(--c);transition:.2s}
+#mic.on{background:radial-gradient(circle,#fff,var(--c));box-shadow:0 0 40px var(--c),0 0 80px var(--b)}
+#mic svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:2}
+label.sw{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1.5px;cursor:pointer}
+label.sw input{appearance:none;-webkit-appearance:none;width:34px;height:18px;border-radius:10px;border:1px solid var(--c);position:relative;margin:0;background:#000}
+label.sw input::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--c);transition:.2s}
+label.sw input:checked{background:rgba(53,230,255,.35)}label.sw input:checked::after{left:18px;box-shadow:0 0 8px var(--c)}
+select,input[type=range]{background:#02101c;color:var(--c);border:1px solid rgba(53,230,255,.5);border-radius:4px;font:inherit;font-size:11px;padding:4px}
+input[type=range]{padding:0;width:80px;accent-color:var(--c)}
+#gear{background:none;border:0;color:var(--c);font-size:22px;cursor:pointer}
+#tin{display:none;width:min(560px,92%);background:#02101c;color:#fff;border:1px solid var(--c);padding:8px;border-radius:4px;font:inherit}
+#set{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);z-index:9}
+#set .glass{width:min(360px,90%);display:flex;flex-direction:column;gap:12px;font-size:12px;padding:18px}
+@media (max-width:820px),(orientation:portrait){
+ .side{width:calc(50% - 14px);top:calc(56px + env(safe-area-inset-top,0px));max-height:150px;font-size:9px}
+ #L{transform:perspective(600px) rotateY(10deg)}#R{transform:perspective(600px) rotateY(-10deg)}
+ .cal,#R .xs{display:none}
+}
+@media (max-height:480px){#vo{height:44px}.side{max-height:calc(100% - 210px);top:50px}#st{letter-spacing:4px}#mic{width:44px;height:44px}}
+</style></head><body>
+<canvas id="c"></canvas><div class="scan"></div>
+<header><div><i></i>JARVIS SYSTEM ONLINE</div><div id="dt"></div><div id="clk"></div><div id="bat"></div><div id="net"></div></header>
+<aside id="L" class="side glass"><h3>SYSTEM</h3><div id="sys" style="display:flex;flex-direction:column;gap:4px"></div></aside>
+<aside id="R" class="side glass"><h3>WEATHER</h3><button class="hb" id="wb">OPEN FORECAST ▸</button>
+ <h3 class="xs" style="margin-top:6px">CALENDAR</h3><div id="cal" class="cal"></div>
+ <h3 style="margin-top:6px">REMINDERS</h3><div id="rem" class="rl"></div>
+ <h3 style="margin-top:6px">RECENT COMMANDS</h3><div id="his" class="rl"></div></aside>
+<div id="bot">
+ <div id="st">SYSTEM STANDBY</div><div id="sub"></div><div id="vo"></div>
+ <input id="tin" placeholder="Voice input unsupported in this browser: type a command and press Enter">
+ <div id="ctl" class="glass">
+  <button id="mic" aria-label="Microphone"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+  <label class="sw"><input type="checkbox" id="wk">VOICE ACTIVATION</label>
+  <select id="lang"><option value="en-US">EN · US</option><option value="en-IN">EN · IN</option><option value="hi-IN">हिन्दी</option><option value="es-ES">ES</option></select>
+  <label class="sw">VOL<input type="range" id="vol" min="0" max="1" step=".05"></label>
+  <button id="gear" aria-label="Settings">⚙</button>
+ </div>
+</div>
+<div id="set"><div class="glass"><h3>SETTINGS</h3>
+ <label>VOICE<br><select id="vsel" style="width:100%"></select></label>
+ <label>SPEECH RATE<br><input type="range" id="rate" min=".6" max="1.5" step=".05" style="width:100%"></label>
+ <button class="hb" id="clr">CLEAR REMINDERS &amp; HISTORY</button><button class="hb" id="cls">CLOSE</button></div></div>
+<script>
+const $=id=>document.getElementById(id),rnd=Math.random;
+const LS={get(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const cfg=Object.assign({rate:1,vol:1,lang:'en-US',voice:'',wake:false},LS.get('jv_cfg',{}));
+let rem=LS.get('jv_rem',[]),hist=LS.get('jv_hist',[]);
+const save=()=>{LS.set('jv_cfg',cfg);LS.set('jv_rem',rem);LS.set('jv_hist',hist)};
+let st='standby',speaking=false,busy=false,rec=null,armed=0,uLine=null,bat=null,an=null,fd=null,bump=0;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition,SY=window.speechSynthesis;
+const LAB={standby:'SYSTEM STANDBY',listening:'LISTENING',thinking:'ANALYZING',speaking:'SPEAKING'};
+function setSt(s){st=s;$('st').textContent=LAB[s];$('mic').classList.toggle('on',s=='listening');document.querySelectorAll('.side').forEach(e=>{e.style.animation='none';e.offsetWidth;e.style.animation='fi .6s'});sub()}
+function sub(){$('sub').textContent=!SR?'VOICE INPUT NOT SUPPORTED · TYPE A COMMAND':cfg.wake?'WAKE WORD ACTIVE · SAY “JARVIS”':st=='standby'?'TAP THE MICROPHONE TO SPEAK':''}
+function show(w,t,type){const d=document.createElement('div');d.className='ln '+w;const b=document.createElement('b'),s=document.createElement('span');b.textContent=w=='u'?'USER: ':'JARVIS: ';d.append(b,s);const v=$('vo');v.append(d);while(v.children.length>4)v.firstChild.remove();
+ if(type){let i=0;const iv=setInterval(()=>{s.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(iv)},22)}else s.textContent=t;return s}
+function link(u){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';a.textContent='TAP TO OPEN ▸';$('vo').lastChild.append(a)}
+function openUrl(u){let w=null;try{w=window.open(u,'_blank','noopener')}catch(e){}if(!w)link(u)}
+/* ---------- speech ---------- */
+function startRec(){if(!SR||rec||speaking||busy)return;const r=new SR();rec=r;r.lang=cfg.lang;r.continuous=cfg.wake;r.interimResults=true;
+ r.onstart=()=>{if(!cfg.wake)setSt('listening')};
+ r.onresult=e=>{let t='',fin=false;for(let i=e.resultIndex;i<e.results.length;i++){t+=e.results[i][0].transcript;if(e.results[i].isFinal)fin=true}bump=.8;
+  const ok=!cfg.wake||/jarvis/i.test(t)||Date.now()<armed;if(ok){if(!uLine)uLine=show('u','');uLine.textContent=t}
+  if(fin){uLine=null;handle(t)}};
+ r.onerror=e=>{if(e.error=='not-allowed'||e.error=='service-not-allowed'){cfg.wake=false;$('wk').checked=false;show('j','Microphone access is blocked, Sir. Please allow it in the browser.')}};
+ r.onend=()=>{if(rec===r)rec=null;uLine=null;if(cfg.wake&&!speaking&&!busy)setTimeout(startRec,250);else if(st=='listening')setSt('standby')};
+ try{r.start()}catch(e){rec=null}}
+function stopRec(){if(rec){const r=rec;rec=null;r.onend=null;try{r.abort()}catch(e){}}if(st=='listening')setSt('standby')}
+function say(t){speaking=true;busy=false;setSt('speaking');const s=show('j',t,true);
+ const done=()=>{speaking=false;if(st=='speaking')setSt('standby');if(cfg.wake)startRec()};
+ if(!SY){setTimeout(done,Math.max(1500,t.length*55));return}
+ SY.cancel();const u=new SpeechSynthesisUtterance(t);u.rate=cfg.rate;u.pitch=.85;u.volume=cfg.vol;u.lang=cfg.lang;
+ const v=SY.getVoices();u.voice=v.find(x=>x.name==cfg.voice)||v.find(x=>/UK English Male|Daniel/i.test(x.name))||null;
+ u.onboundary=()=>bump=1;u.onend=u.onerror=done;SY.speak(u)}
+/* ---------- commands ---------- */
+const SITES={google:'https://www.google.com',youtube:'https://www.youtube.com',maps:'https://maps.google.com',gmail:'https://mail.google.com',whatsapp:'https://wa.me/',instagram:'https://www.instagram.com',facebook:'https://www.facebook.com',twitter:'https://x.com',wikipedia:'https://www.wikipedia.org',spotify:'https://open.spotify.com'};
+const JOKES=['I would tell you a UDP joke, Sir, but you might not get it.','Why do programmers prefer dark mode? Because light attracts bugs.','I tried to catch some fog earlier, Sir. I mist.'];
+const UN={second:1e3,minute:6e4,hour:36e5};
+const hhmm=d=>new Date(d).toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+function respond(c){let m;
+ if(m=c.match(/^(?:please )?open (?:the )?([a-z ]+?)(?: app| website)?$/)){const k=m[1].trim().split(' ')[0];if(SITES[k])return{t:`Certainly, Sir. Opening ${k[0].toUpperCase()+k.slice(1)}.`,f:()=>openUrl(SITES[k])};return{t:`Searching for ${m[1]}, Sir.`,f:()=>openUrl('https://www.google.com/search?q='+encodeURIComponent(m[1]))}}
+ if(m=c.match(/^(?:search|google|look up)(?: for)? (.+)/))return{t:`Searching the web for ${m[1]}, Sir.`,f:()=>openUrl('https://www.google.com/search?q='+encodeURIComponent(m[1]))};
+ if(m=c.match(/^play (.+)/))return{t:`Playing ${m[1]} on YouTube, Sir.`,f:()=>openUrl('https://www.youtube.com/results?search_query='+encodeURIComponent(m[1]))};
+ if(/weather|forecast/.test(c))return{t:'Pulling up the local forecast, Sir.',f:()=>openUrl('https://www.google.com/search?q=weather')};
+ if(m=c.match(/remind me in (\d+) (second|minute|hour)s? to (.+)/)||(m=c.match(/remind me to (.+?) in (\d+) (second|minute|hour)s?/))&&[0,0,m[2],m[3],m[1]]&&(m=[0,m[2],m[3],m[1]])&&m){const n=+m[1],u=m[2],tx=m[3];rem.push({tx,due:Date.now()+n*UN[u]});save();return{t:`Reminder set for ${hhmm(Date.now()+n*UN[u])}, Sir: ${tx}.`}}
+ if(m=c.match(/remind me to (.+)/)){rem.push({tx:m[1],due:0});save();return{t:`Noted, Sir. I will keep that on your list: ${m[1]}.`}}
+ if(/clear (all )?(my )?reminders/.test(c)){rem=[];save();return{t:'All reminders cleared, Sir.'}}
+ if(/(show|read|list|what are) (my )?reminders/.test(c))return{t:rem.length?'You have '+rem.length+' reminders, Sir: '+rem.map(r=>r.tx).join('; ')+'.':'You have no reminders, Sir.'};
+ if(/\btime\b/.test(c))return{t:'It is '+hhmm(Date.now())+', Sir.'};
+ if(/\b(date|day|today)\b/.test(c))return{t:'Today is '+new Date().toLocaleDateString([],{weekday:'long',month:'long',day:'numeric',year:'numeric'})+', Sir.'};
+ if(/battery|power level/.test(c))return{t:bat?`Power cells at ${Math.round(bat.level*100)} percent${bat.charging?', currently charging':''}, Sir.`:'Battery telemetry is unavailable on this device, Sir.'};
+ if(/status|system|diagnostic/.test(c))return{t:`All systems nominal, Sir. ${navigator.hardwareConcurrency||'Unknown'} processor cores, ${navigator.onLine?'network online':'network offline'}${bat?', battery '+Math.round(bat.level*100)+' percent':''}.`};
+ if(/volume up|louder/.test(c)){cfg.vol=Math.min(1,cfg.vol+.25);$('vol').value=cfg.vol;save();return{t:'Volume increased, Sir.'}}
+ if(/volume down|quieter|softer/.test(c)){cfg.vol=Math.max(.1,cfg.vol-.25);$('vol').value=cfg.vol;save();return{t:'Volume reduced, Sir.'}}
+ if(/joke/.test(c))return{t:JOKES[Math.floor(rnd()*JOKES.length)]};
+ if(/who are you|your name/.test(c))return{t:'I am JARVIS, Sir. Just A Rather Very Intelligent System, at your service.'};
+ if(/^(hello|hi|hey|good (morning|evening|afternoon))/.test(c))return{t:'Good '+(new Date().getHours()<12?'morning':new Date().getHours()<18?'afternoon':'evening')+', Sir. How may I assist you?'};
+ if(/thank/.test(c))return{t:'Always a pleasure, Sir.'};
+ const mt=c.replace(/what is|what’s|what's|calculate|compute|equals/g,'').replace(/ plus /g,'+').replace(/ minus /g,'-').replace(/ (times|multiplied by) /g,'*').replace(/ divided by /g,'/').replace(/\bx\b/g,'*').trim();
+ if(/^[\d\s+\-*/.()]+$/.test(mt)&&/\d\s*[-+*/]\s*\d/.test(mt)){try{const v=Function('"use strict";return ('+mt+')')();if(isFinite(v))return{t:`The answer is ${+v.toFixed(6)}, Sir.`}}catch(e){}}
+ return{t:'Searching the web for that, Sir.',f:()=>openUrl('https://www.google.com/search?q='+encodeURIComponent(c))}}
+function handle(raw){const t=raw.trim();if(!t)return;const lc=t.toLowerCase().replace(/[?!.]+$/,'');
+ if(cfg.wake&&!/jarvis/.test(lc)&&Date.now()>armed)return;
+ if(/jarvis/.test(lc))armed=Date.now()+8000;
+ const cmd=lc.replace(/^.*?\bjarvis\b[,.!\s]*/,'').trim();
+ if(rec){if(!$('vo').lastChild||!$('vo').lastChild.classList.contains('u'))show('u',t)}else show('u',t);
+ busy=true;stopRec();setSt('thinking');hist.unshift(t);hist=hist.slice(0,6);save();
+ setTimeout(()=>{if(!cmd){say('Yes, Sir?');return}const r=respond(cmd);say(r.t);if(r.f)setTimeout(r.f,400)},950)}
+/* ---------- controls ---------- */
+$('mic').onclick=()=>{if(!SR){$('tin').focus();return}
+ if(!an&&matchMedia('(pointer:fine)').matches&&navigator.mediaDevices)navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{const ac=new(window.AudioContext||window.webkitAudioContext)();an=ac.createAnalyser();an.fftSize=256;ac.createMediaStreamSource(s).connect(an);fd=new Uint8Array(an.frequencyBinCount)}).catch(()=>{});
+ if(SY)SY.cancel();speaking=false;if(rec)stopRec();else{busy=false;startRec()}};
+$('wk').checked=cfg.wake;$('wk').onchange=e=>{cfg.wake=e.target.checked;save();if(cfg.wake){busy=false;startRec()}else stopRec();sub()};
+$('lang').value=cfg.lang;$('lang').onchange=e=>{cfg.lang=e.target.value;save();if(rec){stopRec();startRec()}};
+$('vol').value=cfg.vol;$('vol').oninput=e=>{cfg.vol=+e.target.value;save()};
+$('rate').value=cfg.rate;$('rate').oninput=e=>{cfg.rate=+e.target.value;save()};
+$('gear').onclick=()=>{$('set').style.display='flex'};$('cls').onclick=()=>{$('set').style.display='none'};
+$('clr').onclick=()=>{rem=[];hist=[];save()};$('wb').onclick=()=>handle('jarvis weather');
+$('vsel').onchange=e=>{cfg.voice=e.target.value;save()};
+function voices(){if(!SY)return;const v=SY.getVoices();$('vsel').innerHTML='<option value="">AUTO</option>'+v.map(x=>`<option ${x.name==cfg.voice?'selected':''}>${x.name}</option>`).join('')}
+if(SY){voices();SY.onvoiceschanged=voices}
+if(!SR){$('tin').style.display='block';$('tin').onkeydown=e=>{if(e.key=='Enter'&&e.target.value.trim()){const v=e.target.value;e.target.value='';handle('jarvis '+v)}}}
+/* ---------- live data ---------- */
+if(navigator.getBattery)navigator.getBattery().then(b=>{bat=b;['levelchange','chargingchange'].forEach(n=>b.addEventListener(n,ui))}).catch(()=>{});
+let fps=60,calDay=-1;
+function ui(){const d=new Date();$('clk').textContent=d.toLocaleTimeString([],{hour12:false});$('dt').textContent=d.toLocaleDateString([],{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();
+ const bl=bat?Math.round(bat.level*100)+'%'+(bat.charging?' ⚡':''):'N/A',cn=navigator.connection||{},on=navigator.onLine;
+ $('bat').textContent='🔋 '+bl;$('net').textContent='📶 '+(on?(cn.type=='wifi'?'WI-FI':(cn.effectiveType||'ONLINE').toUpperCase()):'OFFLINE');
+ const mem=navigator.deviceMemory?navigator.deviceMemory+' GB':'N/A',hp=performance.memory?Math.round(performance.memory.usedJSHeapSize/1048576)+' MB':'N/A';
+ const rows=[['BATTERY',bl],['CPU CORES',navigator.hardwareConcurrency||'N/A'],['DEVICE RAM',mem],['JS HEAP',hp],['RENDER FPS',Math.round(fps)],['NETWORK',on?'ONLINE':'OFFLINE'],['LINK TYPE',cn.effectiveType?cn.effectiveType.toUpperCase():'N/A'],['DOWNLINK',cn.downlink?cn.downlink+' Mbps':'N/A'],['LATENCY',cn.rtt!=null?cn.rtt+' ms':'N/A'],['VOICE',SR?'READY':'UNSUPPORTED']];
+ $('sys').innerHTML=rows.map(r=>`<div class="r"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('');
+ $('rem').innerHTML=rem.length?rem.slice(0,4).map(r=>`<div>▸ ${r.due?hhmm(r.due)+' · ':''}${r.tx}</div>`).join(''):'<div style="opacity:.5">NONE</div>';
+ $('his').innerHTML=hist.length?hist.slice(0,4).map(h=>`<div>› ${h}</div>`).join(''):'<div style="opacity:.5">NONE</div>';
+ if(calDay!=d.getDate()){calDay=d.getDate();const y=d.getFullYear(),m=d.getMonth(),f=new Date(y,m,1).getDay(),n=new Date(y,m+1,0).getDate();
+  $('cal').innerHTML='<div class="h" style="grid-column:1/8">'+d.toLocaleDateString([],{month:'long',year:'numeric'}).toUpperCase()+'</div>'+'SMTWTFS'.split('').map(c=>`<div class="h">${c}</div>`).join('')+'<div></div>'.repeat(f)+Array.from({length:n},(_,i)=>`<div class="${i+1==calDay?'t':''}">${i+1}</div>`).join('')}}
+setInterval(ui,1000);ui();
+setInterval(()=>{const now=Date.now(),due=rem.filter(r=>r.due&&r.due<=now);if(due.length&&!speaking&&!busy){rem=rem.filter(r=>!(r.due&&r.due<=now));save();if(rec)stopRec();say('Sir, a reminder: '+due[0].tx+'.')}},4000);
+/* ---------- holographic core ---------- */
+const cv=$('c'),x=cv.getContext('2d');let W,H,cx,cy,B;
+function rs(){const dpr=Math.min(devicePixelRatio||1,1.75);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;x.setTransform(dpr,0,0,dpr,0,0);
+ const top=56,bt=$('bot').offsetHeight,fr=Math.max(120,H-top-bt);cx=W/2;cy=top+fr/2;B=Math.max(34,Math.min(W*(W<H?.25:.17),fr/2/1.75))}
+addEventListener('resize',rs);rs();setTimeout(rs,300);
+const CY='53,230,255',BL='42,123,255',RG=[[1,2,[2,10],.5],[1.18,7,[70,22],-.3],[1.42,1.5,[],.15],[1.62,10,[3,6],-.12],[1.85,1,[1,7],.2]],PT=[];
+for(let i=0;i<150;i++)PT.push({a:rnd()*6.283,r:1+rnd()*1.7,s:(.08+rnd()*.3)*(rnd()<.5?-1:1)});
+const an0=new Float32Array(6),sm=new Float32Array(120);let T=0,last=0,mu=1,lv=0;
+function arc(r,w,dash,rot,al,col){x.save();x.translate(cx,cy);x.rotate(rot);x.setLineDash(dash.map(v=>v*B/100));x.lineWidth=w*B/100;x.strokeStyle=`rgba(${col||CY},${al})`;x.beginPath();x.arc(0,0,r,0,6.283);x.stroke();x.restore()}
+function draw(dt){
+ x.globalCompositeOperation='source-over';x.fillStyle='#000';x.fillRect(0,0,W,H);
+ let g=x.createRadialGradient(cx,cy,0,cx,cy,B*3.4);g.addColorStop(0,`rgba(10,70,130,${.4+lv*.3})`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(0,0,W,H);
+ x.globalCompositeOperation='lighter';
+ mu+=(({standby:1,listening:2.8,thinking:6,speaking:2})[st]-mu)*Math.min(1,dt*3);
+ const lt=st=='listening'?(an?Math.min(1,fd.reduce((a,b)=>a+b,0)/fd.length/90):.18+.12*Math.sin(T*7))+bump*.5:st=='speaking'?.35+.3*Math.abs(Math.sin(T*9))+bump*.4:.05;
+ lv+=(lt-lv)*Math.min(1,dt*10);bump*=Math.pow(.02,dt);
+ if(an&&st=='listening')an.getByteFrequencyData(fd);
+ const pu=.5+.5*Math.sin(T*1.6);
+ g=x.createRadialGradient(cx,cy,0,cx,cy,B*.95);g.addColorStop(0,`rgba(220,255,255,${.75+lv*.25})`);g.addColorStop(.25,`rgba(${CY},${.55+lv*.4})`);g.addColorStop(.6,`rgba(${BL},${.25+pu*.1+lv*.3})`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(cx,cy,B*.95,0,6.283);x.fill();
+ RG.forEach((q,i)=>{an0[i]+=q[3]*mu*dt;arc(B*q[0],q[1],q[2],an0[i],.35+.4*(i%2?pu:1-pu)+lv*.3,i==1?BL:CY);if(i==1)arc(B*q[0],q[1]*.4,[],0,.5,BL)});
+ for(let i=0;i<10;i++){const a0=an0[0]*-.8+i*.6283;x.strokeStyle=`rgba(${CY},${.6+lv*.4})`;x.lineWidth=B*.1;x.beginPath();x.arc(cx,cy,B*.62,a0,a0+.46);x.stroke()}
+ x.strokeStyle=`rgba(255,255,255,${.7+lv*.3})`;x.lineWidth=B*.03;x.beginPath();for(let i=0;i<3;i++){const a=an0[3]*2+i*2.094;x[i?'lineTo':'moveTo'](cx+Math.cos(a)*B*.34,cy+Math.sin(a)*B*.34)}x.closePath();x.stroke();
+ x.strokeStyle=`rgba(${CY},.7)`;x.lineWidth=B*.015;for(let i=0;i<72;i++){const a=i/72*6.283+an0[2],l=i%6?B*.04:B*.1,r0=B*1.5;x.beginPath();x.moveTo(cx+Math.cos(a)*r0,cy+Math.sin(a)*r0);x.lineTo(cx+Math.cos(a)*(r0+l),cy+Math.sin(a)*(r0+l));x.stroke()}
+ for(let k=0;k<2;k++){x.save();x.translate(cx,cy);x.rotate(k?-an0[4]*3+1.1:an0[4]*3);x.scale(1,.3);x.strokeStyle=`rgba(${k?BL:CY},.45)`;x.lineWidth=B*.015;x.beginPath();x.arc(0,0,B*(2.05+k*.2),0,6.283);x.stroke();const a=T*(k?-1.1:1.4)*mu*.6;x.fillStyle='#fff';x.beginPath();x.arc(Math.cos(a)*B*(2.05+k*.2),Math.sin(a)*B*(2.05+k*.2),B*.05,0,6.283);x.fill();x.restore()}
+ x.strokeStyle=`rgba(${CY},.85)`;x.lineWidth=2;x.beginPath();const r0=B*1.27;
+ for(let i=0;i<120;i++){const ix=i<60?i:119-i,nz=(Math.sin(i*.9+T*6)*.5+.5)*(Math.sin(i*.37-T*3.3)*.5+.5),tg=an&&st=='listening'?fd[ix*2+1]/255:nz*lv*1.5+.03;sm[i]+=(tg-sm[i])*.35;const a=i/120*6.283+an0[0]*.3,l=B*(.04+sm[i]*.42);x.moveTo(cx+Math.cos(a)*r0,cy+Math.sin(a)*r0);x.lineTo(cx+Math.cos(a)*(r0+l),cy+Math.sin(a)*(r0+l))}x.stroke();
+ const th=st=='thinking';
+ PT.forEach(p=>{p.a+=p.s*mu*dt*.8;const tr=th?1.05+.5*Math.abs(Math.sin(T*3+p.a)):p.r;p.cr=(p.cr||p.r)+(tr-(p.cr||p.r))*dt*2;x.fillStyle=`rgba(${CY},${.25+.5*Math.abs(Math.sin(T+p.a*3))})`;x.fillRect(cx+Math.cos(p.a)*B*p.cr,cy+Math.sin(p.a)*B*p.cr*(th?1:.9),1.8,1.8)});
+ if(th){const a=T*5;for(let j=0;j<10;j++){x.fillStyle=`rgba(${CY},${.2-j*.02})`;x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,B*1.4,a-j*.09-.09,a-j*.09);x.fill()}
+  const sy=cy+Math.sin(T*2.4)*B*1.3;x.save();x.beginPath();x.arc(cx,cy,B*1.4,0,6.283);x.clip();g=x.createLinearGradient(0,sy-12,0,sy+12);g.addColorStop(.5,`rgba(255,255,255,.8)`);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.fillRect(cx-B*1.5,sy-12,B*3,24);x.restore()}
+ if(st=='listening')for(let k=0;k<3;k++){const ph=(T*.8+k/3)%1;arc(B*(1+ph*1.2),1.2,[],0,(1-ph)*.7)}
+ x.globalCompositeOperation='source-over'}
+function frame(t){requestAnimationFrame(frame);const dt=Math.min(.05,(t-last)/1000)||.016;last=t;T+=dt;fps+=(1/dt-fps)*.05;draw(dt)}
+requestAnimationFrame(frame);
+sub();setSt('standby');show('j','System online. Awaiting your command, Sir.');
+</script></body></html>
